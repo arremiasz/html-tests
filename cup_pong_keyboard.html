@@ -36,7 +36,7 @@
         }
         .ball {
             position: absolute;
-            width: 10%;
+            width: 15%;
             height: 10%;
             background-color: orange;
             border-radius: 50%;
@@ -53,7 +53,6 @@
     </style>
 </head>
 <body>
-
 
     <div class="game-container" id="gameContainer">
         <div class="ball" id="ball"></div>
@@ -90,8 +89,8 @@
                 endX = event.changedTouches[0].clientX;
                 endY = event.changedTouches[0].clientY;
 
-                velocityX = (endX - startX) / 10; // Horizontal swipe speed
-                velocityY = (startY - endY) / 10; // Vertical swipe speed
+                velocityX = (endX - startX) / 15; // Horizontal swipe speed
+                velocityY = (startY - endY) / 15; // Vertical swipe speed
 
                 throwBall(velocityX, velocityY);
             }
@@ -107,21 +106,24 @@
                 ballY -= vy; // Move vertically
                 vy -= gravity; // Apply gravity
 
-                // Prevent ball from leaving the screen
+                // Bounce off walls
                 if (ballX <= 0 || ballX >= gameContainer.clientWidth - ball.clientWidth) {
-                    vx = -vx * 0.7; // Bounce off walls
+                    vx = -vx * 0.7;
+                    ballX = Math.max(0, Math.min(gameContainer.clientWidth - ball.clientWidth, ballX));
                 }
 
-                if (ballY >= gameContainer.clientHeight * 0.90) { // Hits floor
+                // Check for floor hit
+                if (ballY >= gameContainer.clientHeight * 0.90) {
                     ballY = gameContainer.clientHeight * 0.90;
                     clearInterval(ballInterval);
                     resetBall();
                 }
 
-                if (ballY <= gameContainer.clientHeight * 0.10) { // Check for cup hit
+                // Check for cup collision
+                if (ballY <= gameContainer.clientHeight * 0.10) {
                     if (checkCupCollision(ballX)) {
                         clearInterval(ballInterval);
-                        resetBall();
+                        setTimeout(resetBall, 500);
                     }
                 }
 
