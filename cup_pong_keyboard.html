@@ -76,6 +76,7 @@
             font-weight: bold;
             color: white;
             margin: 0 2px;
+            position: relative;
         }
         .ball {
             position: absolute;
@@ -172,12 +173,10 @@
                     resetBall();
                 }
 
-                // Cup detection (below the cups)
-                if (ballY <= gameContainer.clientHeight * 0.20) {
-                    if (checkCupCollision(ballX)) {
-                        clearInterval(ballInterval);
-                        setTimeout(resetBall, 500);
-                    }
+                // Cup detection (true circular collision)
+                if (checkCupCollision(ballX, ballY)) {
+                    clearInterval(ballInterval);
+                    setTimeout(resetBall, 500);
                 }
 
                 ball.style.left = ballX + "px";
@@ -185,11 +184,22 @@
             }, 20);
         }
 
-        function checkCupCollision(ballX) {
+        function checkCupCollision(ballX, ballY) {
+            let ballRadius = ball.clientWidth / 2;
+            let ballCenterX = ballX + ballRadius;
+            let ballCenterY = ballY + ballRadius;
+
             let scored = false;
             cups.forEach((cup) => {
-                let cupX = cup.element.offsetLeft - cupContainer.scrollLeft; // Adjust for scrolling
-                if (ballX >= cupX && ballX <= cupX + cup.element.clientWidth) {
+                let cupX = cup.element.offsetLeft - cupContainer.scrollLeft;
+                let cupY = cup.element.offsetTop;
+                let cupRadius = cup.element.clientWidth / 2;
+                let cupCenterX = cupX + cupRadius;
+                let cupCenterY = cupY + cupRadius;
+
+                let distance = Math.sqrt((ballCenterX - cupCenterX) ** 2 + (ballCenterY - cupCenterY) ** 2);
+
+                if (distance < ballRadius + cupRadius) { // Circular hit detection
                     selectedLetters.textContent += cup.letter;
                     scored = true;
                 }
