@@ -8,9 +8,11 @@
 <body>
     <input type="range" min="0" max="100" value="50" id="slider">
     <p>Value: <span id="sliderValue">50</span></p>
+    
     <style>
         body {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -18,24 +20,27 @@
             background-color: lightgray;
         }
         #slider {
-            margin: 0 10px;
+            margin: 20px;
+            width: 80%;
         }
     </style>
+    
     <script>
         const slider = document.getElementById('slider');
-        const sliderValue = document.getElementById('sliderValue');
+        const sliderValueDisplay = document.getElementById('sliderValue'); // Renamed to avoid conflict
 
         slider.addEventListener('input', function() {
-            sliderValue.textContent = slider.value;
+            sliderValueDisplay.textContent = slider.value;
         });
 
         window.addEventListener('deviceorientation', function(event) {
             const gamma = event.gamma; // Left-to-right tilt in degrees
+            
             if (gamma !== null) {
                 // Map gamma (-90 to 90) to slider range (0 to 100)
-                const sliderValue = Math.min(Math.max((gamma + 90) / 180 * 100, 0), 100);
-                slider.value = sliderValue;
-                sliderValue.textContent = slider.value;
+                const newValue = Math.min(Math.max((gamma + 90) / 180 * 100, 0), 100);
+                slider.value = newValue;
+                sliderValueDisplay.textContent = Math.round(newValue);
             }
         });
     </script>
