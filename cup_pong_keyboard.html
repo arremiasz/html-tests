@@ -13,78 +13,101 @@
             background-color: lightblue;
             overflow: hidden;
             flex-direction: column;
+            margin: 0;
         }
         .game-container {
             position: relative;
-            width: 300px;
-            height: 500px;
+            width: 90vw;
+            max-width: 400px;
+            height: 80vh;
+            max-height: 600px;
             background-color: white;
             border: 2px solid black;
+            border-radius: 10px;
             overflow: hidden;
         }
         .cup {
             position: absolute;
-            width: 50px;
-            height: 50px;
+            width: 15%;
+            height: 10%;
             background-color: red;
             border-radius: 50%;
-            bottom: 450px;
+            bottom: 85%;
         }
         .ball {
             position: absolute;
-            width: 30px;
-            height: 30px;
+            width: 10%;
+            height: 10%;
             background-color: orange;
             border-radius: 50%;
-            bottom: 10px;
-            left: 135px;
+            bottom: 5%;
+            left: 45%;
+        }
+        .floor {
+            position: absolute;
+            width: 100%;
+            height: 5%;
+            background-color: gray;
+            bottom: 0;
         }
     </style>
 </head>
 <body>
 
-    <h2>Cup Pong Game</h2>
+    <h2>Cup Pong</h2>
     <p>Swipe up to throw the ball into a cup!</p>
     <div class="game-container" id="gameContainer">
         <div class="ball" id="ball"></div>
+        <div class="floor"></div>
     </div>
 
     <script>
         const gameContainer = document.getElementById("gameContainer");
         const ball = document.getElementById("ball");
-        const cupPositions = [25, 100, 175, 250]; // X positions of the cups
+        const cupPositions = [10, 35, 60, 85]; // Percentage-based positions for responsiveness
         let cups = [];
 
         // Create cup elements
         cupPositions.forEach((pos, index) => {
             let cup = document.createElement("div");
             cup.classList.add("cup");
-            cup.style.left = pos + "px";
+            cup.style.left = pos + "%";
             gameContainer.appendChild(cup);
-            cups.push({ element: cup, value: index + 1 }); // Assign values
+            cups.push({ element: cup, value: index + 1 });
         });
 
-        let startY, endY, velocityY;
+        let startY, endY, velocityY, ballY, gravity = 0.5;
+        let isMoving = false;
 
         gameContainer.addEventListener("touchstart", (event) => {
-            startY = event.touches[0].clientY;
+            if (!isMoving) {
+                startY = event.touches[0].clientY;
+            }
         });
 
         gameContainer.addEventListener("touchend", (event) => {
-            endY = event.changedTouches[0].clientY;
-            velocityY = (startY - endY) / 10; // Simple velocity calculation
-            throwBall(velocityY);
+            if (!isMoving) {
+                endY = event.changedTouches[0].clientY;
+                velocityY = (startY - endY) / 15;
+                throwBall(velocityY);
+            }
         });
 
         function throwBall(velocity) {
-            let ballY = ball.offsetTop;
-            let ballX = ball.offsetLeft;
+            isMoving = true;
+            ballY = ball.offsetTop;
             let ballInterval = setInterval(() => {
                 ballY -= velocity;
-                velocity -= 0.3; // Gravity effect
+                velocity -= gravity; // Apply gravity
 
-                if (ballY <= 50) {
-                    checkCupCollision(ballX);
+                if (ballY >= gameContainer.clientHeight * 0.90) { // Stops at the floor
+                    ballY = gameContainer.clientHeight * 0.90;
+                    clearInterval(ballInterval);
+                    resetBall();
+                }
+
+                if (ballY <= gameContainer.clientHeight * 0.10) { // Check for cup hit
+                    checkCupCollision(ball.offsetLeft);
                     clearInterval(ballInterval);
                     resetBall();
                 }
@@ -96,14 +119,15 @@
         function checkCupCollision(ballX) {
             cups.forEach((cup) => {
                 let cupX = cup.element.offsetLeft;
-                if (ballX >= cupX && ballX <= cupX + 50) {
+                if (ballX >= cupX && ballX <= cupX + cup.element.clientWidth) {
                     alert("Scored in cup with value: " + cup.value);
                 }
             });
         }
 
         function resetBall() {
-            ball.style.top = "470px";
+            ball.style.top = "90%";
+            isMoving = false;
         }
     </script>
 
