@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slider Example</title>
+</head>
+<body>
+    <input type="range" min="0" max="100" value="50" id="slider">
+    <p>Value: <span id="sliderValue">50</span></p>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: lightgray;
+        }
+        #slider {
+            margin: 0 10px;
+        }
+    </style>
+    <script>
+        const slider = document.getElementById('slider');
+        const sliderValue = document.getElementById('sliderValue');
+
+        slider.addEventListener('input', function() {
+            sliderValue.textContent = slider.value;
+        });
+
+        window.addEventListener('deviceorientation', function(event) {
+            const gamma = event.gamma; // Left-to-right tilt in degrees
+            if (gamma !== null) {
+                // Map gamma (-90 to 90) to slider range (0 to 100)
+                const sliderValue = Math.min(Math.max((gamma + 90) / 180 * 100, 0), 100);
+                slider.value = sliderValue;
+                sliderValue.textContent = slider.value;
+            }
+        });
+    </script>
+</body>
+</html>
