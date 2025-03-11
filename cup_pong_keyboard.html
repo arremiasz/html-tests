@@ -15,11 +15,29 @@
             flex-direction: column;
             margin: 0;
         }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 90vw;
+            max-width: 400px;
+            margin-bottom: 10px;
+        }
         .selected-letters {
             font-size: 24px;
             font-weight: bold;
-            margin-bottom: 10px;
             min-height: 30px;
+            flex-grow: 1;
+            text-align: center;
+        }
+        .backspace {
+            font-size: 20px;
+            padding: 5px 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
         .game-container {
             position: relative;
@@ -48,6 +66,7 @@
         .cup {
             flex: 0 0 10%;
             height: 100%;
+            aspect-ratio: 1 / 1; /* Ensures a perfect circle */
             background-color: red;
             border-radius: 50%;
             display: flex;
@@ -61,7 +80,7 @@
         .ball {
             position: absolute;
             width: 15%;
-            height: 10%;
+            aspect-ratio: 1 / 1;
             background-color: orange;
             border-radius: 50%;
             bottom: 5%;
@@ -78,7 +97,11 @@
 </head>
 <body>
 
-    <div class="selected-letters" id="selectedLetters"></div>
+    <div class="top-bar">
+        <div class="selected-letters" id="selectedLetters"></div>
+        <button class="backspace" id="backspace">⌫</button>
+    </div>
+
     <div class="game-container" id="gameContainer">
         <div class="cup-container" id="cupContainer"></div>
         <div class="ball" id="ball"></div>
@@ -90,12 +113,13 @@
         const cupContainer = document.getElementById("cupContainer");
         const ball = document.getElementById("ball");
         const selectedLetters = document.getElementById("selectedLetters");
+        const backspace = document.getElementById("backspace");
 
         let cups = [];
         let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         // Create cup elements for A-Z
-        alphabet.split("").forEach((letter, index) => {
+        alphabet.split("").forEach((letter) => {
             let cup = document.createElement("div");
             cup.classList.add("cup");
             cup.textContent = letter;
@@ -178,6 +202,12 @@
             ball.style.left = "45%";
             isMoving = false;
         }
+
+        // Backspace functionality
+        backspace.addEventListener("click", () => {
+            selectedLetters.textContent = selectedLetters.textContent.slice(0, -1);
+        });
+
     </script>
 
 </body>
