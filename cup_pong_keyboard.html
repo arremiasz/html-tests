@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cup Pong</title>
+    <title>Cup Pong Alphabet</title>
     <style>
         body {
             display: flex;
@@ -15,6 +15,12 @@
             flex-direction: column;
             margin: 0;
         }
+        .selected-letters {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            min-height: 30px;
+        }
         .game-container {
             position: relative;
             width: 90vw;
@@ -25,14 +31,32 @@
             border: 2px solid black;
             border-radius: 10px;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .cup-container {
+            position: relative;
+            display: flex;
+            overflow-x: auto;
+            width: 100%;
+            height: 15%;
+            background-color: lightgray;
+            white-space: nowrap;
+            padding: 5px 0;
         }
         .cup {
-            position: absolute;
-            width: 15%;
-            height: 10%;
+            flex: 0 0 10%;
+            height: 100%;
             background-color: red;
             border-radius: 50%;
-            bottom: 85%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            margin: 0 2px;
         }
         .ball {
             position: absolute;
@@ -54,24 +78,29 @@
 </head>
 <body>
 
+    <div class="selected-letters" id="selectedLetters"></div>
     <div class="game-container" id="gameContainer">
+        <div class="cup-container" id="cupContainer"></div>
         <div class="ball" id="ball"></div>
         <div class="floor"></div>
     </div>
 
     <script>
         const gameContainer = document.getElementById("gameContainer");
+        const cupContainer = document.getElementById("cupContainer");
         const ball = document.getElementById("ball");
-        const cupPositions = [10, 35, 60, 85]; // Percentage-based positions for responsiveness
-        let cups = [];
+        const selectedLetters = document.getElementById("selectedLetters");
 
-        // Create cup elements
-        cupPositions.forEach((pos, index) => {
+        let cups = [];
+        let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        // Create cup elements for A-Z
+        alphabet.split("").forEach((letter, index) => {
             let cup = document.createElement("div");
             cup.classList.add("cup");
-            cup.style.left = pos + "%";
-            gameContainer.appendChild(cup);
-            cups.push({ element: cup, value: index + 1 });
+            cup.textContent = letter;
+            cupContainer.appendChild(cup);
+            cups.push({ element: cup, letter });
         });
 
         let startX, startY, endX, endY, velocityX, velocityY, ballX, ballY, gravity = 0.5;
@@ -89,8 +118,8 @@
                 endX = event.changedTouches[0].clientX;
                 endY = event.changedTouches[0].clientY;
 
-                velocityX = (endX - startX) / 15; // Horizontal swipe speed
-                velocityY = (startY - endY) / 15; // Vertical swipe speed
+                velocityX = (endX - startX) / 15;
+                velocityY = (startY - endY) / 15;
 
                 throwBall(velocityX, velocityY);
             }
@@ -102,25 +131,25 @@
             ballY = ball.offsetTop;
 
             let ballInterval = setInterval(() => {
-                ballX += vx; // Move horizontally
-                ballY -= vy; // Move vertically
-                vy -= gravity; // Apply gravity
+                ballX += vx;
+                ballY -= vy;
+                vy -= gravity;
 
-                // Bounce off walls
+                // Wall bounce
                 if (ballX <= 0 || ballX >= gameContainer.clientWidth - ball.clientWidth) {
                     vx = -vx * 0.7;
                     ballX = Math.max(0, Math.min(gameContainer.clientWidth - ball.clientWidth, ballX));
                 }
 
-                // Check for floor hit
+                // Floor collision
                 if (ballY >= gameContainer.clientHeight * 0.90) {
                     ballY = gameContainer.clientHeight * 0.90;
                     clearInterval(ballInterval);
                     resetBall();
                 }
 
-                // Check for cup collision
-                if (ballY <= gameContainer.clientHeight * 0.10) {
+                // Cup detection (below the cups)
+                if (ballY <= gameContainer.clientHeight * 0.20) {
                     if (checkCupCollision(ballX)) {
                         clearInterval(ballInterval);
                         setTimeout(resetBall, 500);
@@ -135,9 +164,9 @@
         function checkCupCollision(ballX) {
             let scored = false;
             cups.forEach((cup) => {
-                let cupX = cup.element.offsetLeft;
+                let cupX = cup.element.offsetLeft - cupContainer.scrollLeft; // Adjust for scrolling
                 if (ballX >= cupX && ballX <= cupX + cup.element.clientWidth) {
-                    alert("Scored in cup with value: " + cup.value);
+                    selectedLetters.textContent += cup.letter;
                     scored = true;
                 }
             });
