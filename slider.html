@@ -6,9 +6,10 @@
     <title>Slider Example</title>
 </head>
 <body>
+    <button id="enableMotion">Enable Motion</button>
     <input type="range" min="0" max="100" value="50" id="slider">
     <p>Value: <span id="sliderValue">50</span></p>
-    
+
     <style>
         body {
             display: flex;
@@ -23,26 +24,53 @@
             margin: 20px;
             width: 80%;
         }
+        #enableMotion {
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 16px;
+        }
     </style>
-    
-    <script>
-        const slider = document.getElementById('slider');
-        const sliderValueDisplay = document.getElementById('sliderValue'); // Renamed to avoid conflict
 
-        slider.addEventListener('input', function() {
+    <script>
+        const enableMotionButton = document.getElementById("enableMotion");
+        const slider = document.getElementById("slider");
+        const sliderValueDisplay = document.getElementById("sliderValue");
+
+        slider.addEventListener("input", function () {
             sliderValueDisplay.textContent = slider.value;
         });
 
-        window.addEventListener('deviceorientation', function(event) {
-            const gamma = event.gamma; // Left-to-right tilt in degrees
-            
+        function handleOrientation(event) {
+            const gamma = event.gamma; // Left-to-right tilt
+
             if (gamma !== null) {
                 // Map gamma (-90 to 90) to slider range (0 to 100)
                 const newValue = Math.min(Math.max((gamma + 90) / 180 * 100, 0), 100);
                 slider.value = newValue;
                 sliderValueDisplay.textContent = Math.round(newValue);
             }
-        });
+        }
+
+        function requestMotionPermission() {
+            if (typeof DeviceMotionEvent.requestPermission === "function") {
+                DeviceMotionEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === "granted") {
+                            window.addEventListener("deviceorientation", handleOrientation);
+                            enableMotionButton.style.display = "none"; // Hide button after enabling
+                        } else {
+                            alert("Permission denied. Please enable motion access in Safari settings.");
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                // If permission request isn't needed, just add the event listener
+                window.addEventListener("deviceorientation", handleOrientation);
+                enableMotionButton.style.display = "none"; // Hide button after enabling
+            }
+        }
+
+        enableMotionButton.addEventListener("click", requestMotionPermission);
     </script>
 </body>
 </html>
