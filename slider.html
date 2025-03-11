@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slider Example</title>
+    <title>Slider with Gravity</title>
 </head>
 <body>
     <button id="enableMotion">Enable Motion</button>
@@ -36,21 +36,26 @@
         const slider = document.getElementById("slider");
         const sliderValueDisplay = document.getElementById("sliderValue");
 
-        slider.addEventListener("input", function () {
-            sliderValueDisplay.textContent = slider.value;
-        });
+        let velocity = 0;  // Speed of the slider movement
+        let position = 50; // Current position of the slider (0-100)
+        const gravity = 0.2; // Strength of tilt influence
+        const friction = 0.98; // Damping to slow down movement
+
+        function updateSlider() {
+            position += velocity;
+            position = Math.max(0, Math.min(100, position)); // Keep within bounds
+            slider.value = position;
+            sliderValueDisplay.textContent = Math.round(position);
+
+            velocity *= friction; // Apply friction to slow it down gradually
+
+            requestAnimationFrame(updateSlider); // Continuously update
+        }
 
         function handleOrientation(event) {
-            let gamma = event.gamma; // Left-to-right tilt
-
+            const gamma = event.gamma; // Left-to-right tilt
             if (gamma !== null) {
-                // Clamp gamma to stay within -90 to 90 degrees
-                gamma = Math.max(-90, Math.min(90, gamma));
-
-                // Map gamma (-90 to 90) to slider range (0 to 100)
-                const newValue = (gamma + 90) / 180 * 100;
-                slider.value = newValue;
-                sliderValueDisplay.textContent = Math.round(newValue);
+                velocity += (gamma / 90) * gravity; // Increase speed based on tilt
             }
         }
 
@@ -60,16 +65,17 @@
                     .then(permissionState => {
                         if (permissionState === "granted") {
                             window.addEventListener("deviceorientation", handleOrientation);
-                            enableMotionButton.style.display = "none"; // Hide button after enabling
+                            enableMotionButton.style.display = "none";
+                            updateSlider(); // Start the animation loop
                         } else {
-                            alert("Permission denied. Please enable motion access in Safari settings.");
+                            alert("Permission denied. Enable motion access in Safari settings.");
                         }
                     })
                     .catch(console.error);
             } else {
-                // If permission request isn't needed, just add the event listener
                 window.addEventListener("deviceorientation", handleOrientation);
-                enableMotionButton.style.display = "none"; // Hide button after enabling
+                enableMotionButton.style.display = "none";
+                updateSlider(); // Start the animation loop
             }
         }
 
