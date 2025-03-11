@@ -54,8 +54,7 @@
 </head>
 <body>
 
-    <h2>Cup Pong</h2>
-    <p>Swipe up to throw the ball into a cup!</p>
+
     <div class="game-container" id="gameContainer">
         <div class="ball" id="ball"></div>
         <div class="floor"></div>
@@ -76,57 +75,76 @@
             cups.push({ element: cup, value: index + 1 });
         });
 
-        let startY, endY, velocityY, ballY, gravity = 0.5;
+        let startX, startY, endX, endY, velocityX, velocityY, ballX, ballY, gravity = 0.5;
         let isMoving = false;
 
         gameContainer.addEventListener("touchstart", (event) => {
             if (!isMoving) {
+                startX = event.touches[0].clientX;
                 startY = event.touches[0].clientY;
             }
         });
 
         gameContainer.addEventListener("touchend", (event) => {
             if (!isMoving) {
+                endX = event.changedTouches[0].clientX;
                 endY = event.changedTouches[0].clientY;
-                velocityY = (startY - endY) / 15;
-                throwBall(velocityY);
+
+                velocityX = (endX - startX) / 10; // Horizontal swipe speed
+                velocityY = (startY - endY) / 10; // Vertical swipe speed
+
+                throwBall(velocityX, velocityY);
             }
         });
 
-        function throwBall(velocity) {
+        function throwBall(vx, vy) {
             isMoving = true;
+            ballX = ball.offsetLeft;
             ballY = ball.offsetTop;
-            let ballInterval = setInterval(() => {
-                ballY -= velocity;
-                velocity -= gravity; // Apply gravity
 
-                if (ballY >= gameContainer.clientHeight * 0.90) { // Stops at the floor
+            let ballInterval = setInterval(() => {
+                ballX += vx; // Move horizontally
+                ballY -= vy; // Move vertically
+                vy -= gravity; // Apply gravity
+
+                // Prevent ball from leaving the screen
+                if (ballX <= 0 || ballX >= gameContainer.clientWidth - ball.clientWidth) {
+                    vx = -vx * 0.7; // Bounce off walls
+                }
+
+                if (ballY >= gameContainer.clientHeight * 0.90) { // Hits floor
                     ballY = gameContainer.clientHeight * 0.90;
                     clearInterval(ballInterval);
                     resetBall();
                 }
 
                 if (ballY <= gameContainer.clientHeight * 0.10) { // Check for cup hit
-                    checkCupCollision(ball.offsetLeft);
-                    clearInterval(ballInterval);
-                    resetBall();
+                    if (checkCupCollision(ballX)) {
+                        clearInterval(ballInterval);
+                        resetBall();
+                    }
                 }
 
+                ball.style.left = ballX + "px";
                 ball.style.top = ballY + "px";
             }, 20);
         }
 
         function checkCupCollision(ballX) {
+            let scored = false;
             cups.forEach((cup) => {
                 let cupX = cup.element.offsetLeft;
                 if (ballX >= cupX && ballX <= cupX + cup.element.clientWidth) {
                     alert("Scored in cup with value: " + cup.value);
+                    scored = true;
                 }
             });
+            return scored;
         }
 
         function resetBall() {
             ball.style.top = "90%";
+            ball.style.left = "45%";
             isMoving = false;
         }
     </script>
